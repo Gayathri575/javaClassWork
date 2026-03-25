@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java Playground | JavaHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+        :root {
+            --dark:       #222831;
+            --dark-alt:   #393e46;
+            --accent:     #00adb5;
+            --accent-dim: #007f87;
+            --light:      #eeeeee;
+            --white:      #ffffff;
+            --footer-bg:  #161b22;
+            --muted:      #8b949e;
+            --radius:     10px;
+            --transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --editor-bg:  #282a36;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--dark);
+            color: var(--light);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Navbar ── */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--dark);
+            padding: 1rem 5%;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(0,173,181,0.15);
+        }
+        .logo { color: var(--white); font-size: 1.3rem; font-weight: 700; font-family: 'IBM Plex Mono', monospace; text-decoration: none; }
+        .logo span { color: var(--accent); }
+        .nav-links { list-style: none; display: flex; gap: 24px; }
+        .nav-links a { text-decoration: none; color: #ccc; font-size: 0.9rem; font-weight: 500; transition: color var(--transition); }
+        .nav-links a:hover { color: var(--accent); }
+        .menu-toggle { display: none; background: transparent; border: 1.5px solid rgba(255,255,255,0.2); color: var(--white); font-size: 1.3rem; cursor: pointer; padding: 6px 12px; border-radius: 6px; }
+
+        /* ── Page Header ── */
+        .page-header {
+            padding: 30px 5% 20px;
+            border-bottom: 1px solid rgba(0,173,181,0.1);
+        }
+        .page-header h1 {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 1.4rem;
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .page-header h1 .tag {
+            background: rgba(0,173,181,0.15);
+            color: var(--accent);
+            font-size: 0.7rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(0,173,181,0.3);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .page-header p { color: var(--muted); font-size: 0.88rem; margin-top: 6px; }
+
+        /* ── Main Layout ── */
+        .playground {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            height: calc(100vh - 130px);
+            min-height: 500px;
+        }
+
+        /* ── Left Panel — Editor ── */
+        .editor-panel {
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(0,173,181,0.15);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            background: #1a1d26;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            flex-shrink: 0;
+        }
+
+        .panel-title {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.78rem;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-title .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 6px var(--accent);
+        }
+
+        .panel-actions { display: flex; gap: 8px; align-items: center; }
+
+        /* Language selector */
+        .lang-select {
+            background: var(--dark-alt);
+            color: var(--light);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-family: 'IBM Plex Mono', monospace;
+            cursor: pointer;
+            outline: none;
+        }
+
+        /* Run button */
+        .run-btn {
+            background: var(--accent);
+            color: var(--white);
+            border: none;
+            padding: 7px 20px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all var(--transition);
+            letter-spacing: 0.3px;
+        }
+        .run-btn:hover { background: var(--accent-dim); transform: translateY(-1px); }
+        .run-btn:disabled { background: #444; cursor: not-allowed; transform: none; }
+        .run-btn .spinner {
+            width: 12px; height: 12px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: none;
+        }
+        .run-btn.loading .spinner { display: block; }
+        .run-btn.loading .btn-text { display: none; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* CodeMirror overrides */
+        .CodeMirror {
+            height: 100%;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.88rem;
+            line-height: 1.6;
+            background: var(--editor-bg) !important;
+        }
+        .CodeMirror-scroll { padding-bottom: 20px; }
+        .editor-wrapper { flex: 1; overflow: hidden; }
+        .editor-wrapper .CodeMirror { height: 100%; }
+
+        /* Stdin area */
+        .stdin-area {
+            border-top: 1px solid rgba(255,255,255,0.05);
+            flex-shrink: 0;
+        }
+        .stdin-label {
+            padding: 6px 16px;
+            font-size: 0.72rem;
+            color: var(--muted);
+            font-family: 'IBM Plex Mono', monospace;
+            background: #1a1d26;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stdin-input {
+            width: 100%;
+            background: #1e2130;
+            color: #cdd6f4;
+            border: none;
+            padding: 10px 16px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.82rem;
+            resize: none;
+            height: 70px;
+            outline: none;
+            line-height: 1.5;
+        }
+
+        /* ── Right Panel — Output ── */
+        .output-panel {
+            display: flex;
+            flex-direction: column;
+            background: #1a1d26;
+        }
+
+        .output-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.7;
+        }
+
+        .output-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #444;
+            gap: 12px;
+        }
+        .output-placeholder .icon { font-size: 2.5rem; }
+        .output-placeholder p { font-size: 0.82rem; }
+
+        .output-result { display: none; }
+
+        .result-meta {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .badge.success { background: rgba(80,200,120,0.15); color: #50c878; border: 1px solid rgba(80,200,120,0.3); }
+        .badge.error   { background: rgba(255,85,85,0.15);  color: #ff5555; border: 1px solid rgba(255,85,85,0.3); }
+        .badge.info    { background: rgba(0,173,181,0.15);  color: var(--accent); border: 1px solid rgba(0,173,181,0.3); }
+
+        .output-box {
+            background: var(--editor-bg);
+            border-radius: 8px;
+            padding: 16px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 0.83rem;
+            line-height: 1.7;
+            border: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 12px;
+            min-height: 60px;
+        }
+        .output-box.stdout { color: #a6e3a1; }
+        .output-box.stderr { color: #f38ba8; }
+        .output-box.compile-err { color: #fab387; }
+        .output-box-label {
+            font-size: 0.68rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        /* Snippets bar */
+        .snippets-bar {
+            padding: 8px 16px;
+            background: #161822;
+            border-top: 1px solid rgba(255,255,255,0.04);
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .snippets-label {
+            font-size: 0.68rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-right: 4px;
+        }
+        .snippet-btn {
+            background: rgba(0,173,181,0.08);
+            border: 1px solid rgba(0,173,181,0.2);
+            color: var(--accent);
+            padding: 3px 10px;
+            border-radius: 5px;
+            font-size: 0.72rem;
+            cursor: pointer;
+            font-family: 'IBM Plex Mono', monospace;
+            transition: all var(--transition);
+        }
+        .snippet-btn:hover { background: rgba(0,173,181,0.2); }
+
+        /* Clear btn */
+        .clear-btn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--muted);
+            padding: 7px 14px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: all var(--transition);
+        }
+        .clear-btn:hover { border-color: #ff5555; color: #ff5555; }
+
+        /* ── Mobile ── */
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            .nav-links {
+                display: none; flex-direction: column; gap: 6px;
+                background: #1b2028; padding: 16px;
+                position: absolute; top: 62px; right: 5%; left: 5%;
+                border-radius: var(--radius); border: 1px solid rgba(0,173,181,0.15);
+                box-shadow: 0 8px 24px rgba(0,0,0,0.3); z-index: 999;
+            }
+            .nav-links.active { display: flex; }
+
+            .playground {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
+                height: auto;
+            }
+            .editor-panel { border-right: none; border-bottom: 1px solid rgba(0,173,181,0.15); min-height: 400px; }
+            .output-panel { min-height: 300px; }
+            .CodeMirror { height: 300px !important; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <a href="index.html" class="logo">Java<span>Hub</span></a>
+    <button class="menu-toggle" id="menu-toggle">☰</button>
+    <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="articles.html">Articles</a></li>
+        <li><a href="project.html">Projects</a></li>
+        <li><a href="coding.html" style="color:var(--accent)">Playground</a></li>
+    </ul>
+</nav>
+
+<!-- Page Header -->
+<div class="page-header">
+    <h1>☕ Java Playground <span class="tag">Online Compiler</span></h1>
+    <p>Write, run, and test Java code — powered by Judge0. Supports stdin input.</p>
+</div>
+
+<!-- Main Playground -->
+<div class="playground">
+
+    <!-- Left: Editor -->
+    <div class="editor-panel">
+        <div class="panel-header">
+            <div class="panel-title">
+                <span class="dot"></span>
+                Main.java
+            </div>
+            <div class="panel-actions">
+                <select class="lang-select" id="lang-select">
+                    <option value="91">Java (JDK 17)</option>
+                    <option value="62">Java (OpenJDK 13)</option>
+                    <option value="71">Python 3</option>
+                    <option value="54">C++17</option>
+                </select>
+                <button class="clear-btn" id="clear-btn">Clear</button>
+                <button class="run-btn" id="run-btn">
+                    <div class="spinner"></div>
+                    <span class="btn-text">▶ Run</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="editor-wrapper">
+            <textarea id="code-editor"></textarea>
+        </div>
+
+        <!-- Snippets -->
+        <div class="snippets-bar">
+            <span class="snippets-label">Snippets:</span>
+            <button class="snippet-btn" data-snippet="hello">Hello World</button>
+            <button class="snippet-btn" data-snippet="array">Array</button>
+            <button class="snippet-btn" data-snippet="sort">Sorting</button>
+            <button class="snippet-btn" data-snippet="twopointer">Two Pointer</button>
+            <button class="snippet-btn" data-snippet="bs">Binary Search</button>
+            <button class="snippet-btn" data-snippet="prime">Prime Check</button>
+        </div>
+
+        <!-- Stdin -->
+        <div class="stdin-area">
+            <div class="stdin-label">stdin / input</div>
+            <textarea class="stdin-input" id="stdin-input" placeholder="Enter input here (if your program reads from Scanner)..."></textarea>
+        </div>
+    </div>
+
+    <!-- Right: Output -->
+    <div class="output-panel">
+        <div class="panel-header">
+            <div class="panel-title">
+                <span class="dot" style="background:#50c878; box-shadow: 0 0 6px #50c878;"></span>
+                Output
+            </div>
+            <div class="panel-actions">
+                <button class="clear-btn" id="clear-output-btn">Clear</button>
+            </div>
+        </div>
+
+        <div class="output-content" id="output-content">
+            <div class="output-placeholder" id="output-placeholder">
+                <div class="icon">⚡</div>
+                <p>Click <strong>Run</strong> to execute your code</p>
+            </div>
+            <div class="output-result" id="output-result">
+                <div class="result-meta" id="result-meta"></div>
+                <div id="stdout-section" style="display:none">
+                    <div class="output-box-label">Output</div>
+                    <div class="output-box stdout" id="stdout-box"></div>
+                </div>
+                <div id="stderr-section" style="display:none">
+                    <div class="output-box-label">Runtime Error</div>
+                    <div class="output-box stderr" id="stderr-box"></div>
+                </div>
+                <div id="compile-section" style="display:none">
+                    <div class="output-box-label">Compile Error</div>
+                    <div class="output-box compile-err" id="compile-box"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // ── Code Snippets ──────────────────────────────────────
+    const snippets = {
+        hello: `public class Main {
+        public static void main(String[] args) {
+            System.out.println("Hello, JavaHub! ☕");
+        }
+    }`,
+        array: `import java.util.Arrays;
+
+    public class Main {
+        public static void main(String[] args) {
+            int[] arr = {5, 2, 8, 1, 9, 3};
+
+            // Find max
+            int max = arr[0];
+            for (int x : arr) if (x > max) max = x;
+            System.out.println("Max: " + max);
+
+            // Sort
+            Arrays.sort(arr);
+            System.out.println("Sorted: " + Arrays.toString(arr));
+
+            // Reverse
+            int l = 0, r = arr.length - 1;
+            while (l < r) {
+                int t = arr[l]; arr[l] = arr[r]; arr[r] = t;
+                l++; r--;
+            }
+            System.out.println("Reversed: " + Arrays.toString(arr));
+        }
+    }`,
+        sort: `import java.util.Arrays;
+
+    public class Main {
+        static void bubbleSort(int[] arr) {
+            int n = arr.length;
+            for (int i = 0; i < n - 1; i++)
+                for (int j = 0; j < n - i - 1; j++)
+                    if (arr[j] > arr[j+1]) {
+                        int t = arr[j]; arr[j] = arr[j+1]; arr[j+1] = t;
+                    }
+        }
+
+        public static void main(String[] args) {
+            int[] arr = {64, 34, 25, 12, 22, 11, 90};
+            System.out.println("Before: " + Arrays.toString(arr));
+            bubbleSort(arr);
+            System.out.println("After:  " + Arrays.toString(arr));
+        }
+    }`,
+        twopointer: `public class Main {
+        static boolean hasPairWithSum(int[] arr, int target) {
+            int l = 0, r = arr.length - 1;
+            while (l < r) {
+                int sum = arr[l] + arr[r];
+                if (sum == target) return true;
+                else if (sum < target) l++;
+                else r--;
+            }
+            return false;
+        }
+
+        public static void main(String[] args) {
+            int[] arr = {1, 2, 4, 6, 8, 10};  // must be sorted
+            int target = 14;
+            System.out.println("Has pair with sum " + target + ": " + hasPairWithSum(arr, target));
+
+            // Container with most water
+            int[] h = {1, 8, 6, 2, 5, 4, 8, 3, 7};
+            int left = 0, right = h.length - 1, max = 0;
+            while (left < right) {
+                max = Math.max(max, Math.min(h[left], h[right]) * (right - left));
+                if (h[left] < h[right]) left++; else right--;
+            }
+            System.out.println("Max water: " + max);
+        }
+    }`,
+        bs: `public class Main {
+        static int binarySearch(int[] arr, int target) {
+            int l = 0, r = arr.length - 1;
+            while (l <= r) {
+                int mid = l + (r - l) / 2;
+                if (arr[mid] == target) return mid;
+                else if (arr[mid] < target) l = mid + 1;
+                else r = mid - 1;
+            }
+            return -1;
+        }
+
+        public static void main(String[] args) {
+            int[] arr = {1, 3, 5, 7, 9, 11, 13, 15};
+            int target = 7;
+            int idx = binarySearch(arr, target);
+            System.out.println("Target " + target + " found at index: " + idx);
+        }
+    }`,
+        prime: `public class Main {
+        static boolean isPrime(int n) {
+            if (n < 2) return false;
+            for (int i = 2; i * i <= n; i++)
+                if (n % i == 0) return false;
+            return true;
+        }
+
+        static int gcd(int a, int b) {
+            return b == 0 ? a : gcd(b, a % b);
+        }
+
+        public static void main(String[] args) {
+            // Print primes up to 30
+            System.out.print("Primes up to 30: ");
+            for (int i = 2; i <= 30; i++)
+                if (isPrime(i)) System.out.print(i + " ");
+            System.out.println();
+
+            // GCD & LCM
+            int a = 12, b = 18;
+            int g = gcd(a, b);
+            int l = (a / g) * b;
+            System.out.println("GCD(" + a + "," + b + ") = " + g);
+            System.out.println("LCM(" + a + "," + b + ") = " + l);
+        }
+    }`
+    };
+
+    // ── Init CodeMirror ────────────────────────────────────
+    const editor = CodeMirror.fromTextArea(document.getElementById("code-editor"), {
+        mode: "text/x-java",
+        theme: "dracula",
+        lineNumbers: true,
+        indentUnit: 4,
+        tabSize: 4,
+        indentWithTabs: false,
+        lineWrapping: false,
+        autoCloseBrackets: true,
+        extraKeys: {
+            "Tab": (cm) => cm.execCommand("indentMore"),
+            "Ctrl-Enter": () => runCode(),
+            "Cmd-Enter": () => runCode()
+        }
+    });
+
+    // Load hello world by default
+    editor.setValue(snippets.hello);
+
+    // ── Snippet Buttons ────────────────────────────────────
+    document.querySelectorAll(".snippet-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const key = btn.getAttribute("data-snippet");
+            if (snippets[key]) {
+                editor.setValue(snippets[key]);
+                editor.focus();
+            }
+        });
+    });
+
+    // ── Language change — update editor mode ──────────────
+    document.getElementById("lang-select").addEventListener("change", (e) => {
+        const val = e.target.value;
+        const modeMap = { "91": "text/x-java", "62": "text/x-java", "71": "text/x-python", "54": "text/x-c++src" };
+        editor.setOption("mode", modeMap[val] || "text/x-java");
+    });
+
+    // ── Clear buttons ──────────────────────────────────────
+    document.getElementById("clear-btn").addEventListener("click", () => editor.setValue(""));
+    document.getElementById("clear-output-btn").addEventListener("click", () => resetOutput());
+
+    // ── Run Code ───────────────────────────────────────────
+    async function runCode() {
+        const code = editor.getValue().trim();
+        if (!code) return;
+
+        const langId  = document.getElementById("lang-select").value;
+        const stdin   = document.getElementById("stdin-input").value;
+        const runBtn  = document.getElementById("run-btn");
+
+        // Set loading state
+        runBtn.disabled = true;
+        runBtn.classList.add("loading");
+        resetOutput();
+        showPlaceholder("⏳ Compiling and running...");
+
+        try {
+            // Submit to Judge0 (free public instance)
+            const submitRes = await fetch("https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=false&wait=true", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
+                    // ⚠️ Replace with your RapidAPI key
+                    // Get free key at: https://rapidapi.com/judge0-official/api/judge0-ce
+                    "X-RapidAPI-Key": "YOUR_RAPIDAPI_KEY_HERE"
+                },
+                body: JSON.stringify({
+                    source_code: code,
+                    language_id: parseInt(langId),
+                    stdin: stdin || ""
+                })
+            });
+
+            if (!submitRes.ok) {
+                // Fallback: use public Judge0 without API key
+                await runWithPublicJudge0(code, langId, stdin);
+                return;
+            }
+
+            const result = await submitRes.json();
+            displayResult(result);
+
+        } catch (err) {
+            // Try public instance fallback
+            await runWithPublicJudge0(code, langId, stdin);
+        } finally {
+            runBtn.disabled = false;
+            runBtn.classList.remove("loading");
+        }
+    }
+
+    // ── Public Judge0 fallback (no API key needed) ─────────
+    async function runWithPublicJudge0(code, langId, stdin) {
+        try {
+            // Submit
+            const submitRes = await fetch("https://ce.judge0.com/submissions?base64_encoded=false", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    source_code: code,
+                    language_id: parseInt(langId),
+                    stdin: stdin || ""
+                })
+            });
+
+            if (!submitRes.ok) throw new Error("Submission failed");
+            const { token } = await submitRes.json();
+
+            // Poll for result
+            let result;
+            for (let i = 0; i < 10; i++) {
+                await sleep(1000);
+                const res = await fetch(`https://ce.judge0.com/submissions/${token}?base64_encoded=false`);
+                result = await res.json();
+                if (result.status && result.status.id > 2) break; // not queued/processing
+            }
+
+            displayResult(result);
+        } catch (err) {
+            showError("Could not connect to compiler. Check your internet connection.\n\nTip: Deploy Judge0 locally or get a RapidAPI key for reliable execution.");
+        } finally {
+            document.getElementById("run-btn").disabled = false;
+            document.getElementById("run-btn").classList.remove("loading");
+        }
+    }
+
+    // ── Display Result ─────────────────────────────────────
+    function displayResult(result) {
+        document.getElementById("output-placeholder").style.display = "none";
+        document.getElementById("output-result").style.display = "block";
+
+        const meta = document.getElementById("result-meta");
+        const status = result.status || {};
+        const statusId = status.id || 0;
+
+        // Status badge
+        let badgeClass = "info";
+        let statusText = status.description || "Unknown";
+        if (statusId === 3) badgeClass = "success"; // Accepted
+        else if (statusId >= 4) badgeClass = "error";
+
+        meta.innerHTML = `
+            <span class="badge ${badgeClass}">${statusText}</span>
+            ${result.time ? `<span class="badge info">⏱ ${result.time}s</span>` : ""}
+            ${result.memory ? `<span class="badge info">💾 ${result.memory} KB</span>` : ""}
+        `;
+
+        // stdout
+        if (result.stdout) {
+            document.getElementById("stdout-section").style.display = "block";
+            document.getElementById("stdout-box").textContent = result.stdout;
+        }
+
+        // stderr
+        if (result.stderr) {
+            document.getElementById("stderr-section").style.display = "block";
+            document.getElementById("stderr-box").textContent = result.stderr;
+        }
+
+        // compile error
+        if (result.compile_output) {
+            document.getElementById("compile-section").style.display = "block";
+            document.getElementById("compile-box").textContent = result.compile_output;
+        }
+
+        // If nothing at all
+        if (!result.stdout && !result.stderr && !result.compile_output) {
+            document.getElementById("stdout-section").style.display = "block";
+            document.getElementById("stdout-box").textContent = "(no output)";
+        }
+    }
+
+    function showError(msg) {
+        document.getElementById("output-placeholder").style.display = "none";
+        document.getElementById("output-result").style.display = "block";
+        document.getElementById("result-meta").innerHTML = `<span class="badge error">Error</span>`;
+        document.getElementById("stderr-section").style.display = "block";
+        document.getElementById("stderr-box").textContent = msg;
+    }
+
+    function showPlaceholder(msg) {
+        document.getElementById("output-placeholder").style.display = "flex";
+        document.getElementById("output-placeholder").innerHTML = `<div class="icon">⏳</div><p>${msg}</p>`;
+        document.getElementById("output-result").style.display = "none";
+    }
+
+    function resetOutput() {
+        document.getElementById("output-placeholder").innerHTML = `<div class="icon">⚡</div><p>Click <strong>Run</strong> to execute your code</p>`;
+        document.getElementById("output-placeholder").style.display = "flex";
+        document.getElementById("output-result").style.display = "none";
+        document.getElementById("stdout-section").style.display = "none";
+        document.getElementById("stderr-section").style.display = "none";
+        document.getElementById("compile-section").style.display = "none";
+        document.getElementById("result-meta").innerHTML = "";
+        document.getElementById("stdout-box").textContent = "";
+        document.getElementById("stderr-box").textContent = "";
+        document.getElementById("compile-box").textContent = "";
+    }
+
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    // ── Run on Ctrl+Enter ──────────────────────────────────
+    document.getElementById("run-btn").addEventListener("click", runCode);
+
+    // ── Navbar Toggle ──────────────────────────────────────
+    const toggle = document.getElementById("menu-toggle");
+    const navLinks = document.getElementById("nav-links");
+    toggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        navLinks.classList.toggle("active");
+        toggle.textContent = navLinks.classList.contains("active") ? "✖" : "☰";
+    });
+    document.addEventListener("click", (e) => {
+        if (!navLinks.contains(e.target) && e.target !== toggle) {
+            navLinks.classList.remove("active");
+            toggle.textContent = "☰";
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMS Project | JavaHub</title>
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/project.css"> <!-- Optional project-specific CSS -->
+    <style>
+        /* Optional inline styles */
+        .project-container {
+          max-width: 800px;
+          margin: 50px auto;
+          text-align: center;
+        }
+        #project-image {
+          cursor: pointer;
+          transition: width 0.3s ease;
+          margin: 20px 0;
+        }
+        #project-github {
+          display: inline-block;
+          margin-top: 15px;
+          padding: 8px 15px;
+          background: var(--primary, #007bff);
+          color: white;
+          text-decoration: none;
+          border-radius: 5px;
+        }
+        #project-github:hover {
+          opacity: 0.9;
+        }
+        .project-section {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 25px 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.project-section:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.project-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 1.5rem;
+    color: var(--dark);
+    margin-bottom: 10px;
+}
+
+.tech-stack {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--accent-dim);
+    margin-bottom: 15px;
+}
+
+.description {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--dark-alt);
+    margin-bottom: 20px;
+}
+
+.btn-github {
+    display: inline-block;
+    text-decoration: none;
+    background: var(--accent);
+    color: var(--white);
+    padding: 10px 18px;
+    border-radius: var(--radius);
+    font-weight: 600;
+    transition: background var(--transition), transform var(--transition);
+}
+
+.btn-github:hover {
+    background: var(--accent-dim);
+    transform: translateY(-2px);
+}
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="logo">Java<span>Hub</span></div>
+    <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation">☰</button>
+    <ul class="nav-links" id="nav-links">
+        <li><a href="/index.html">Home</a></li>
+        <li><a href="/articles.html">Articles</a></li>
+        <li><a href="/project.html">Projects</a></li>
+        <li><a href="#">Quiz</a></li>
+    </ul>
+</nav>
+
+<!-- Project Details -->
+<div class="project-section">
+    <h1 class="project-title">newsApi Java Project</h1>
+
+    <div class="tech-stack">Tech: Java, REST API, HTTP Client, JSON Parsing</div>
+
+    <p class="description">
+        A project that connects to the News API service to fetch
+        and display the latest news.
+        It handles REST API calls, parses JSON responses, and prints
+        news headlines in the console.
+    </p>
+
+    <br>
+
+    <a href="https://github.com/Gayathri575/DSA_JAVA/blob/main/src/MiniProject/newsApi.java"
+       target="_blank"
+       class="btn-github">
+        View Project on GitHub
+    </a>
+</div>
+<!-- JS Scripts -->
+<script src="../js/common.js"></script> <!-- Navbar/Sidebar -->
+<script>
+    // EMS project-specific JS (inline)
+    document.addEventListener("DOMContentLoaded", () => {
+        const img = document.getElementById("project-image");
+
+        // Optional: click image to enlarge/shrink
+        img.addEventListener("click", () => {
+            img.style.width = img.style.width === "600px" ? "300px" : "600px";
+        });
+
+        console.log("EMS project page loaded successfully!");
+    });
+</script>
+
+</body>
+</html>

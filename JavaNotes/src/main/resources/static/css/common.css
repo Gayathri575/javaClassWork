@@ -1,0 +1,91 @@
+/* ===== common.css ===== */
+
+/* ── Navbar Toggle Button ────────────────────── */
+#menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--primary, #fff);
+    z-index: 1001;
+}
+
+
+/* ── Sidebar Toggle Button ───────────────────── */
+#sidebar-toggle {
+    display: none;
+    background: var(--primary, #333);
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 6px;
+    margin: 10px;
+    z-index: 1001;
+}
+
+/* ── Mobile Styles ───────────────────────────── */
+@media (max-width: 768px) {
+
+    /* Show hamburger buttons */
+    #menu-toggle {
+        display: block;
+    }
+
+    #sidebar-toggle {
+        display: block;
+    }
+
+    /* Nav links — hidden by default on mobile */
+    #nav-links {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        width: 100%;
+        background: var(--bg, #1e1e1e);
+        padding: 1rem 0;
+        z-index: 1000;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    /* Show nav when active */
+    #nav-links.active {
+        display: flex;
+    }
+
+    #nav-links a, #nav-links li {
+        padding: 12px 24px;
+        text-align: left;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    /* Sidebar — hidden by default on mobile */
+    .sidebar {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 75%;
+        max-width: 300px;
+        height: 100vh;
+        background: var(--bg, #1e1e1e);
+        overflow-y: auto;
+        z-index: 999;
+        padding: 60px 0 20px 0;
+        box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+        transition: transform 0.3s ease;
+    }
+
+    /* Show sidebar when active */
+    .sidebar.active {
+        display: block;
+    }
+}
+        /* Simple loader style */
+        .loader { text-align: center; padding: 50px; font-style: italic; color: #666; }
+        .sidebar-subitem.active { background: #e0e0e0; font-weight: bold; color: #007bff; }
+        .sidebar-section-header { cursor: pointer; display: flex; justify-content: space-between; padding: 10px; font-weight: bold; background: #f8f9fa; border-bottom: 1px solid #ddd; }

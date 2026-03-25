@@ -217,7 +217,110 @@ body {
     color: #222831;
     font-size: 0.95rem;
 }
+/* ===========================
+   SIDEBAR GROUPED SECTIONS
+=========================== */
+/* ===========================
+   FIX: Override old sidebar li styles
+   for new grouped section items
+=========================== */
 
+/* Prevent old .sidebar li styles from affecting section headers */
+.sidebar li.sidebar-section-header {
+    padding: 10px 15px;
+    margin-bottom: 0;
+    font-size: 0.82rem;
+    color: var(--accent);
+    background: rgba(0, 173, 181, 0.08);
+}
+
+.sidebar li.sidebar-section-header:hover {
+    background: rgba(0, 173, 181, 0.18);
+}
+
+/* Prevent old active style from bleeding into headers */
+.sidebar li.sidebar-section-header.active {
+    background: rgba(0, 173, 181, 0.08);
+    color: var(--accent);
+    font-weight: 700;
+}
+
+/* Sublist should not inherit sidebar ul padding */
+.sidebar .sidebar-sublist {
+    padding-left: 8px;
+}
+
+/* Subitems override */
+.sidebar .sidebar-sublist li.sidebar-subitem {
+    padding: 8px 14px;
+    margin-bottom: 3px;
+    font-size: 0.85rem;
+    color: #ccc;
+}
+
+.sidebar .sidebar-sublist li.sidebar-subitem.active {
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
+}
+
+.sidebar .sidebar-sublist li.sidebar-subitem:hover:not(.active) {
+    background: rgba(0, 173, 181, 0.15);
+    color: white;
+}
+.sidebar-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 6px;
+    background: rgba(0, 173, 181, 0.08);
+    transition: background 0.2s ease;
+}
+
+.sidebar-section-header:hover {
+    background: rgba(0, 173, 181, 0.18);
+}
+
+.sidebar-section-header .arrow {
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.sidebar-sublist {
+    list-style: none;
+    display: none; /* Collapsed by default */
+    padding-left: 8px;
+    margin-bottom: 4px;
+}
+
+.sidebar-subitem {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    color: #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 3px;
+    transition: all 0.2s ease;
+}
+
+.sidebar-subitem:hover:not(.active) {
+    background: rgba(0, 173, 181, 0.15);
+    color: white;
+}
+
+.sidebar-subitem.active {
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
+}
 /* ===========================
    MOBILE VIEW
 =========================== */
@@ -248,5 +351,51 @@ body {
         margin-bottom: 10px;
         cursor: pointer;
         width: fit-content;
+    }
+
+}
+
+/* ===========================
+   MOBILE VIEW
+=========================== */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0.8rem 5%;
+        height: 60px;
+    }
+
+    /* ✅ Navbar toggle show cheyyum */
+    .menu-toggle { display: block; }
+
+    /* ✅ Sidebar — completely hidden on mobile, no slide-in */
+    .sidebar {
+        display: none !important;
+    }
+
+    /* ✅ Sidebar toggle button — not needed */
+    #sidebar-toggle {
+        display: none !important;
+    }
+
+    /* ✅ Overlay — not needed */
+    #sidebar-overlay {
+        display: none !important;
+    }
+
+    /* ✅ Content full width */
+    .topic-content {
+        padding: 15px;
+        width: 100%;
+    }
+
+    /* ✅ Pagination smaller */
+    .pagination {
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .pagination button {
+        padding: 8px 14px;
+        font-size: 0.85rem;
     }
 }

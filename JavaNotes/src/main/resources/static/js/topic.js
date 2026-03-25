@@ -1,11 +1,6 @@
-const toggle = document.getElementById("menu-toggle");
-const navLinks = document.getElementById("nav-links");
+// ===== topic.js =====
 
-toggle.addEventListener("click", () => {
-    navLinks.classList.toggle("active");
-    toggle.textContent = navLinks.classList.contains("active") ? "✖" : "☰";
-});
-const sidebar = document.querySelector(".sidebar");
+const sidebar = document.querySelector(".sidebar ul");
 const pageContent = document.getElementById("page-content");
 const pageNumber = document.getElementById("page-number");
 const prevBtn = document.getElementById("prev");
@@ -15,156 +10,198 @@ let pages = [];
 let currentPage = 0;
 const category = "Core Java";
 
-// 1. Fetch notes from backend
+// -------- Section grouping map --------
+const sectionMap = {
+  "OOP Concepts": [
+    "Classes and Objects", "Constructors", "this keyword", "static keyword",
+    "Inheritance", "Method Overriding & super keyword", "Polymorphism",
+    "Encapsulation", "Abstraction", "Interfaces", "Object class methods",
+    "Packages and Access Modifiers", "Marker Interface", "Cloneable Interface"
+  ],
+  "Exception Handling": [
+    "try, catch, finally", "Multiple catch blocks", "Nested try",
+    "throw vs throws", "Custom Exceptions", "Checked vs Unchecked Exceptions"
+  ],
+  "Java Memory Management": [
+    "Stack vs Heap", "Garbage Collection", "finalize() method",
+    "final, finally, finalize differences", "Garbage Collectors (types)",
+    "Garbage Collector"
+  ],
+  "Java Strings": [
+    "String, StringBuilder, StringBuffer", "Immutability of String",
+    "String methods", "String Comparison", "Regular Expressions"
+  ],
+  "Collections Framework": [
+    "Collection Interfaces", "Implementation Classes", "Iterators & Loops",
+    "Generics", "Comparable vs Comparator", "Collections Utility Class",
+    "Thread-safe Collections"
+  ],
+  "Java Generics": [
+    "Generic Classes and Methods", "Bounded Types", "Wildcards", "Type Erasure"
+  ],
+  "Multithreading": [
+    "Thread Creation", "Thread Lifecycle", "Thread Priorities",
+    "Synchronization", "Inter-thread Communication", "ExecutorService",
+    "Callable and Future", "Atomic Classes"
+  ],
+  "Java I/O": [
+    "File I/O", "Buffered I/O", "Byte vs Character Streams", "Serialization",
+    "Deserialization", "transient keyword", "Scanner Class", "NIO"
+  ],
+  "Java 8+ Features": [
+    "Lambda Expressions", "Functional Interfaces", "Predicate", "Function",
+    "Consumer", "Stream API", "Optional Class", "Method References",
+    "Default & Static Methods in Interfaces", "Date & Time API"
+  ],
+  "Concurrency Utilities": [
+    "java.util.concurrent", "CountDownLatch, Semaphore, CyclicBarrier",
+    "ForkJoinPool", "Executors Framework"
+  ],
+  "Annotations & Reflection": [
+    "Built-in Annotations", "Custom Annotations", "Reflection API",
+    "Dynamic Class Loading"
+  ],
+  "Networking": [
+    "Sockets (TCP/UDP)", "URL & URLConnection", "HTTP Requests", "InetAddress"
+  ]
+};
+
+// -------- 1. Fetch Notes --------
 async function fetchNotes() {
-    try {
-        // Backend port 8080 nu confirm panniko
-        const response = await fetch(`http://localhost:8080/api/notes/category?category=${encodeURIComponent(category)}`);
+  pageContent.innerHTML = `<div class="loader">Fetching ${category} from Database...</div>`;
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+  try {
+    const response = await fetch(
+      `http://localhost:8080/api/notes/category?category=${encodeURIComponent(category)}`
+    );
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-        const data = await response.json();
-        console.log("API DATA RECEIVED:", data); // Browser Console-la check pannunga data varudha nu
+    const data = await response.json();
 
-        if (data && data.length > 0) {
-            pages = data;
-            renderSidebar();
-            renderPage();
-        } else {
-            pageContent.innerHTML = `<h3>No content found for "${category}"</h3><p>Check if the category name matches exactly in Database.</p>`;
-        }
-    } catch (err) {
-        pageContent.innerHTML = "<p style='color:red;'>Error loading content. Make sure Backend is running and CORS is enabled.</p>";
-        console.error("Fetch Error:", err);
-    }
-}
-
-// 2. Render Sidebar dynamically based on DB titles
-function renderSidebar() {
-    sidebar.innerHTML = ""; // Clear static HTML
-    pages.forEach((note, idx) => {
-        const li = document.createElement("li");
-        li.textContent = note.title; // DB field name 'title' ah nu check panniko
-        li.classList.toggle("active", idx === currentPage);
-
-        li.addEventListener("click", () => {
-            currentPage = idx;
-            renderPage();
-            renderSidebar(); // Refresh active class
-        });
-        sidebar.appendChild(li);
-    });
-}
-
-// 3. Render Page Content
-function renderPage() {
-    if (!pages || pages.length === 0) {
-        pageContent.innerHTML = "<p>No content available.</p>";
-        pageNumber.textContent = "0 / 0";
-        return;
-    }
-
-    const currentNote = pages[currentPage];
-
-    // Check if content exists
-    if (currentNote && currentNote.content) {
-        pageContent.innerHTML = currentNote.content;
-        pageNumber.textContent = `${currentPage + 1} / ${pages.length}`;
+    if (data && data.length > 0) {
+      pages = data;
+      currentPage = 0;
+      renderSidebar();
+      renderPage();
     } else {
-        pageContent.innerHTML = "<h3>" + (currentNote.title || "Untitled") + "</h3><p>Content is empty for this topic in DB.</p>";
+      pageContent.innerHTML = `<h3>No content found for "${category}"</h3>`;
+      pageNumber.textContent = "0 / 0";
     }
-
-    // Scroll back to top when page changes
-    window.scrollTo(0, 0);
+  } catch (err) {
+    console.error("Fetch Error:", err);
+    pageContent.innerHTML = `<p style="color:red;">Error loading content.</p>`;
+    pageNumber.textContent = "0 / 0";
+  }
 }
 
-// 4. Pagination Listeners
-prevBtn.addEventListener("click", () => {
-    if (currentPage > 0) {
-        currentPage--;
+// -------- 2. Render Grouped Sidebar (Desktop only) --------
+function renderSidebar() {
+  // ✅ Skip rendering sidebar on mobile
+  if (window.innerWidth <= 768) return;
+
+  sidebar.innerHTML = "";
+
+  Object.entries(sectionMap).forEach(([sectionName, titles]) => {
+
+    const sectionNotes = titles
+      .map(title => pages.findIndex(p => p.title === title))
+      .filter(idx => idx !== -1);
+
+    if (sectionNotes.length === 0) return;
+
+    const sectionHeader = document.createElement("li");
+    sectionHeader.classList.add("sidebar-section-header");
+    sectionHeader.innerHTML = `<span>${sectionName}</span><span class="arrow">▾</span>`;
+
+    const subList = document.createElement("ul");
+    subList.classList.add("sidebar-sublist");
+
+    // Auto-open active section
+    if (sectionNotes.includes(currentPage)) {
+      subList.style.display = "block";
+      sectionHeader.querySelector(".arrow").textContent = "▾";
+    }
+
+    sectionNotes.forEach(noteIdx => {
+      const note = pages[noteIdx];
+      const li = document.createElement("li");
+      li.textContent = note.title;
+      li.classList.add("sidebar-subitem");
+
+      if (noteIdx === currentPage) li.classList.add("active");
+
+      li.addEventListener("click", () => {
+        currentPage = noteIdx;
         renderPage();
         renderSidebar();
-    }
+      });
+
+      subList.appendChild(li);
+    });
+
+    sectionHeader.addEventListener("click", () => {
+      const isOpen = subList.style.display === "block";
+      subList.style.display = isOpen ? "none" : "block";
+      sectionHeader.querySelector(".arrow").textContent = isOpen ? "▸" : "▾";
+    });
+
+    sidebar.appendChild(sectionHeader);
+    sidebar.appendChild(subList);
+  });
+}
+
+// -------- 3. Render Page Content --------
+function renderPage() {
+  if (!pages || pages.length === 0) {
+    pageContent.innerHTML = "<p>No content available.</p>";
+    pageNumber.textContent = "0 / 0";
+    return;
+  }
+
+  const currentNote = pages[currentPage];
+  pageContent.innerHTML = `
+    <div class="note-card">
+      <div class="note-body">${currentNote.content || "Content is empty."}</div>
+    </div>
+  `;
+
+  pageNumber.textContent = `${currentPage + 1} / ${pages.length}`;
+  window.scrollTo(0, 0);
+}
+
+// -------- 4. Pagination --------
+prevBtn.addEventListener("click", () => {
+  if (currentPage > 0) { currentPage--; renderPage(); renderSidebar(); }
 });
 
 nextBtn.addEventListener("click", () => {
-    if (currentPage < pages.length - 1) {
-        currentPage++;
-        renderPage();
-        renderSidebar();
-    }
+  if (currentPage < pages.length - 1) { currentPage++; renderPage(); renderSidebar(); }
 });
 
-// 5. Sidebar Toggle (Mobile Fix)
-// Navbar-la iruka hamburger button use panrom
-const menuToggle = document.getElementById("menu-toggle-navbar");
-if (menuToggle) {
-    menuToggle.addEventListener("click", () => {
-        sidebar.classList.toggle("active");
-    });
-}
-const pageContent = document.getElementById("page-content");
-const sidebarItems = document.querySelectorAll(".sidebar li");
+// -------- 5. Hide sidebar on mobile --------
+function handleSidebarVisibility() {
+  const sidebarEl = document.querySelector(".sidebar");
+  const toggleBtn = document.getElementById("sidebar-toggle");
 
-// Function to get data ONLY from the Database
-async function loadDataFromDB(category) {
-    // Show a loading state so the user knows the DB is working
-    pageContent.innerHTML = `<div class="loader">Fetching ${category} from Database...</div>`;
-
-    try {
-        // This calls your @GetMapping("/category") in NotesController
-        const response = await fetch(`http://localhost:8080/api/notes/category?category=${encodeURIComponent(category)}`);
-
-        if (!response.ok) {
-            throw new Error(`Server error: ${response.status}`);
-        }
-
-        const notes = await response.json();
-
-        if (notes.length === 0) {
-            pageContent.innerHTML = `<h3>${category}</h3><p>No data found in MySQL for this topic.</p>`;
-            return;
-        }
-
-        // Displaying the Database results
-        pageContent.innerHTML = notes.map(note => `
-            <div class="note-card">
-                <h2>${note.title}</h2>
-                <div class="note-body">${note.content}</div>
-                <hr>
-                <small>Category: ${note.category} | ID: ${note.id}</small>
-            </div>
-        `).join("");
-
-    } catch (error) {
-        console.error("Database Fetch Error:", error);
-        pageContent.innerHTML = `
-            <div class="error-msg">
-                <p><strong>Connection Failed!</strong></p>
-                <p>Make sure Spring Boot is running and @CrossOrigin is added to your Controller.</p>
-            </div>`;
-    }
+  if (window.innerWidth <= 768) {
+    // ✅ Hide sidebar completely on mobile
+    if (sidebarEl) sidebarEl.style.display = "none";
+    if (toggleBtn) toggleBtn.style.display = "none";
+  } else {
+    // ✅ Show sidebar on desktop
+    if (sidebarEl) sidebarEl.style.display = "";
+    if (toggleBtn) toggleBtn.style.display = "none"; // never needed
+  }
 }
 
-// Sidebar Click Listener
-sidebarItems.forEach(item => {
-    item.addEventListener("click", function() {
-        // 1. Update UI Active State
-        sidebarItems.forEach(li => li.classList.remove("active"));
-        this.classList.add("active");
-
-        // 2. Get the exact name from the <li> and fetch from DB
-        const selectedTopic = this.textContent.trim();
-        loadDataFromDB(selectedTopic);
-    });
+// -------- 6. Init --------
+window.addEventListener("DOMContentLoaded", () => {
+  handleSidebarVisibility();
+  fetchNotes();
 });
 
-// Load the first item by default on page load
-window.addEventListener('DOMContentLoaded', () => {
-    const firstTopic = document.querySelector(".sidebar li.active").textContent.trim();
-    loadDataFromDB(firstTopic);
+// ✅ Handle screen rotation / resize
+window.addEventListener("resize", () => {
+  handleSidebarVisibility();
+  renderSidebar();
 });
-// Initial Load
-fetchNotes();

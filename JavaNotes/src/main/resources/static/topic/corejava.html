@@ -5,63 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Core Java | JavaHub</title>
     <link rel="stylesheet" href="../css/topic.css">
+    <link rel="stylesheet" href="../css/common.css">
 </head>
 <body>
 
-<!-- ========================
-     NAVBAR
-========================= -->
 <nav class="navbar">
     <div class="logo">Java<span>Hub</span></div>
-
+    <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation">☰</button>
     <ul class="nav-links" id="nav-links">
         <li><a href="/index.html">Home</a></li>
         <li><a href="/articles.html">Articles</a></li>
         <li><a href="/project.html">Projects</a></li>
-        <li><a href="#">Interview Q&A</a></li>
+        <li><a href="#">Quiz</a></li>
     </ul>
-
-    <!-- Single hamburger inside navbar -->
-    <button class="menu-toggle" id="menu-toggle-navbar" aria-label="Toggle navigation">☰</button>
 </nav>
 
-<!-- ========================
-     TOPIC PAGE
-========================= -->
 <div class="topic-container">
 
-    <!-- Sidebar -->
+    <!-- ✅ Sidebar — desktop only, no toggle button needed -->
     <aside class="sidebar" id="sidebar">
-        <ul>
-            <li class="active" data-page="0">OOPS Concepts</li>
-            <li data-page="1">Collections</li>
-            <li data-page="2">Generics</li>
-            <li data-page="3">Exception Handling</li>
-            <li data-page="4">Multithreading</li>
-        </ul>
+        <ul id="sidebar-list"></ul>
     </aside>
 
-    <!-- Content Area -->
     <main class="topic-content">
 
-        <!-- Sidebar toggle — visible only on mobile, inside content area -->
-        <button id="sidebar-toggle" aria-label="Open topics menu">☰ Topics</button>
-
-        <div id="page-content">
-            <!-- Dynamic content loads here -->
-        </div>
+        <div id="page-content"></div>
 
         <div class="pagination">
             <button id="prev">← Prev</button>
             <span id="page-number">1 / 5</span>
             <button id="next">Next →</button>
         </div>
+
     </main>
+
 </div>
 
-<!-- Overlay for mobile sidebar backdrop -->
-<div id="sidebar-overlay"></div>
-
+<!-- ✅ common.js first — handles navbar ☰ toggle -->
+<script src="../js/common.js"></script>
 <script src="../js/topic.js"></script>
 </body>
 </html>
