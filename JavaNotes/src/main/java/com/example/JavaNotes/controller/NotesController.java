@@ -67,5 +67,6 @@ import java.util.List;
             List<Notes> notes = notesService.getNotesByCategory(category);
             return ResponseEntity.ok(notes);
         }
+
     }
 
