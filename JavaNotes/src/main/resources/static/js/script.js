@@ -6,8 +6,8 @@ async function loadNotes() {
     if (!container) return;
 
     try {
-        const response = await fetch('http://localhost:8080/api/notes');
-
+// CORRECT ✅
+const response = await fetch('/api/notes');
         if (!response.ok) throw new Error("Backend not responding");
 
         const notes = await response.json();

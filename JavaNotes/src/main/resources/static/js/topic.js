@@ -71,9 +71,8 @@ async function fetchNotes() {
   pageContent.innerHTML = `<div class="loader">Fetching ${category} from Database...</div>`;
 
   try {
-    const response = await fetch(
-      `http://localhost:8080/api/notes/category?category=${encodeURIComponent(category)}`
-    );
+    // CORRECT ✅
+    const response = await fetch('/api/notes');
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
     const data = await response.json();

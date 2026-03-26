@@ -45,7 +45,7 @@ async function fetchNotes() {
     try {
         const responses = await Promise.all(
             dsaCategories.map(cat =>
-                fetch(`http://localhost:8080/api/notes/category?category=${encodeURIComponent(cat)}`)
+fetch(`/api/notes/category?category=${encodeURIComponent(cat)}`)
                     .then(res => {
                         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
                         return res.json();

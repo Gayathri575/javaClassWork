@@ -32,7 +32,7 @@ async function fetchNotes() {
     pageContent.innerHTML = `<div class="loader">Loading MySQL Modules...</div>`;
 
     try {
-        const response = await fetch(`http://localhost:8080/api/notes?topic=MySQL`);
+        const response = await fetch(`/api/notes?topic=MySQL`);
         if (!response.ok) throw new Error("Failed to fetch");
 
         const allData = await response.json();
