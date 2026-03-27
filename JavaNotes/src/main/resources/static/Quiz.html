@@ -2,120 +2,51 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Quiz | JavaHub</title>
-    <style>
-        body {
-          font-family: Arial, sans-serif;
-          background: #f4f6f9;
-          margin: 0;
-          padding: 0;
-        }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Articles | JavaHub</title>
+    <link rel="stylesheet" href="css/quiz.css">
+    <link rel="stylesheet" href="css/common.css">
 
-        .container {
-          width: 90%;
-          max-width: 900px;
-          margin: 40px auto;
-        }
-
-        h1 {
-          text-align: center;
-          color: #333;
-        }
-
-        .section {
-          background: #fff;
-          border-radius: 12px;
-          padding: 25px;
-          margin: 20px 0;
-          box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        .section h2 {
-          margin-bottom: 10px;
-          color: #444;
-        }
-
-        .section p {
-          color: #666;
-          margin-bottom: 20px;
-        }
-
-        .btn {
-          display: inline-block;
-          padding: 10px 18px;
-          margin: 5px;
-          border: none;
-          border-radius: 8px;
-          background: #007bff;
-          color: white;
-          cursor: pointer;
-          text-decoration: none;
-          font-size: 14px;
-        }
-
-        .btn:hover {
-          background: #0056b3;
-        }
-
-        .topics {
-          margin-top: 10px;
-        }
-
-        .topics button {
-          background: #28a745;
-        }
-
-        .topics button:hover {
-          background: #1e7e34;
-        }
-
-        .mock {
-          background: #ff9800;
-        }
-
-        .mock:hover {
-          background: #e68900;
-        }
-    </style>
 </head>
 <body>
+<!-- Navbar same as index.html -->
+<nav class="navbar">
+    <div class="logo">Java<span>Hub</span></div>
+    <button class="menu-toggle" id="menu-toggle">☰</button>
+    <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="articles.html">Articles</a></li>
+        <li><a href="project.html">Projects</a></li>
+        <li><a href="Quiz.html">Quiz</a></li>
+    </ul>
+</nav>
 
-<div class="container">
-    <h1>🚀 Quiz Section</h1>
+<!-- Articles Grid -->
+<section class="articles-grid">
+    <h1>Test Your <span>Java</span> Knowledge</h1>
+    <p style="
+    font-size: 0.97rem;
+    color: #b0b8c4;
+    margin-bottom: 2rem;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+">
+        Attempt AI-generated questions across Core Java, DSA, Spring Boot, Hibernate, and more. Track your score and progress!
+    </p>
 
-    <!-- Test Yourself -->
-    <div class="section">
-        <h2>🧠 Test Yourself</h2>
-        <p>Select a topic and practice your knowledge.</p>
-
-        <div class="topics">
-            <button class="btn" onclick="startQuiz('core-java')">Core Java</button>
-            <button class="btn" onclick="startQuiz('hibernate')">Hibernate</button>
-            <button class="btn" onclick="startQuiz('springboot')">Spring Boot</button>
-            <button class="btn" onclick="startQuiz('mysql')">MySQL</button>
-        </div>
+    <div class="grid-container">
+        <div class="grid-item"><a href="Quiz/Qcorejava.html">Core Java</a></div>
+        <div class="grid-item"><a href="Quiz/Qdsa.html">DSA</a></div>
+        <div class="grid-item"><a href="Quiz/Qmysql.html">MySQL</a></div>
+        <div class="grid-item"><a href="Quiz/Qhibernate.html">Hibernate</a></div>
+        <div class="grid-item"><a href="Quiz/Qspringboot.html">Springboot</a></div>
+        <div class="grid-item"><a href="Quiz/Qspringsecurity.html">Spring Security</a></div>
     </div>
+</section>
 
-    <!-- Mock Interview -->
-    <div class="section">
-        <h2>🎯 Mock Interview</h2>
-        <p>Attempt a mixed quiz from all topics. Just like real interview!</p>
-
-        <button class="btn mock" onclick="startMock()">Start Mock Test</button>
-    </div>
-</div>
-
-<script>
-    function startQuiz(topic) {
-      // redirect to quiz page with topic
-      window.location.href = "quiz-player.html?topic=" + topic;
-    }
-
-    function startMock() {
-      // redirect to mixed quiz
-      window.location.href = "quiz-player.html?topic=all";
-    }
-</script>
+<script src="js/articles.js"></script>
+<script src="js/common.js"></script>
 
 </body>
 </html>
