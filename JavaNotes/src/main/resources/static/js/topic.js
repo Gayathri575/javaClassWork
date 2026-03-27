@@ -1,6 +1,6 @@
-// ===== topic.js =====
+// ===== topic.js (Core Java) =====
 
-const sidebar = document.querySelector(".sidebar ul");
+const sidebar = document.getElementById("sidebar-list");
 const pageContent = document.getElementById("page-content");
 const pageNumber = document.getElementById("page-number");
 const prevBtn = document.getElementById("prev");
@@ -8,9 +8,10 @@ const nextBtn = document.getElementById("next");
 
 let pages = [];
 let currentPage = 0;
+let isInitialized = false;
+
 const category = "Core Java";
 
-// -------- Section grouping map --------
 const sectionMap = {
   "OOP Concepts": [
     "Classes and Objects", "Constructors", "this keyword", "static keyword",
@@ -71,14 +72,18 @@ async function fetchNotes() {
   pageContent.innerHTML = `<div class="loader">Fetching ${category} from Database...</div>`;
 
   try {
-    // CORRECT ✅
-    const response = await fetch('/api/notes');
+    const response = await fetch(`/api/notes/category?category=${encodeURIComponent(category)}`);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
     const data = await response.json();
 
-    if (data && data.length > 0) {
-      pages = data;
+    const orderedTitles = Object.values(sectionMap).flat();
+    const sorted = orderedTitles
+      .map(title => data.find(p => p.title === title))
+      .filter(Boolean);
+
+    if (sorted.length > 0) {
+      pages = sorted;
       currentPage = 0;
       renderSidebar();
       renderPage();
@@ -93,15 +98,13 @@ async function fetchNotes() {
   }
 }
 
-// -------- 2. Render Grouped Sidebar (Desktop only) --------
+// -------- 2. Render Sidebar --------
 function renderSidebar() {
-  // ✅ Skip rendering sidebar on mobile
   if (window.innerWidth <= 768) return;
 
   sidebar.innerHTML = "";
 
   Object.entries(sectionMap).forEach(([sectionName, titles]) => {
-
     const sectionNotes = titles
       .map(title => pages.findIndex(p => p.title === title))
       .filter(idx => idx !== -1);
@@ -115,10 +118,8 @@ function renderSidebar() {
     const subList = document.createElement("ul");
     subList.classList.add("sidebar-sublist");
 
-    // Auto-open active section
     if (sectionNotes.includes(currentPage)) {
       subList.style.display = "block";
-      sectionHeader.querySelector(".arrow").textContent = "▾";
     }
 
     sectionNotes.forEach(noteIdx => {
@@ -149,7 +150,7 @@ function renderSidebar() {
   });
 }
 
-// -------- 3. Render Page Content --------
+// -------- 3. Render Page --------
 function renderPage() {
   if (!pages || pages.length === 0) {
     pageContent.innerHTML = "<p>No content available.</p>";
@@ -160,6 +161,7 @@ function renderPage() {
   const currentNote = pages[currentPage];
   pageContent.innerHTML = `
     <div class="note-card">
+      <h2>${currentNote.title}</h2>
       <div class="note-body">${currentNote.content || "Content is empty."}</div>
     </div>
   `;
@@ -177,19 +179,20 @@ nextBtn.addEventListener("click", () => {
   if (currentPage < pages.length - 1) { currentPage++; renderPage(); renderSidebar(); }
 });
 
-// -------- 5. Hide sidebar on mobile --------
+// -------- 5. Sidebar Visibility --------
 function handleSidebarVisibility() {
-  const sidebarEl = document.querySelector(".sidebar");
+  const sidebarEl = document.getElementById("sidebar");
+  const overlayEl = document.getElementById("sidebar-overlay");
   const toggleBtn = document.getElementById("sidebar-toggle");
 
   if (window.innerWidth <= 768) {
-    // ✅ Hide sidebar completely on mobile
     if (sidebarEl) sidebarEl.style.display = "none";
+    if (overlayEl) overlayEl.style.display = "none";
     if (toggleBtn) toggleBtn.style.display = "none";
   } else {
-    // ✅ Show sidebar on desktop
     if (sidebarEl) sidebarEl.style.display = "";
-    if (toggleBtn) toggleBtn.style.display = "none"; // never needed
+    if (overlayEl) overlayEl.style.display = "";
+    if (toggleBtn) toggleBtn.style.display = "none";
   }
 }
 
@@ -197,10 +200,11 @@ function handleSidebarVisibility() {
 window.addEventListener("DOMContentLoaded", () => {
   handleSidebarVisibility();
   fetchNotes();
+  isInitialized = true;
 });
 
-// ✅ Handle screen rotation / resize
 window.addEventListener("resize", () => {
+  if (!isInitialized) return;
   handleSidebarVisibility();
   renderSidebar();
 });
