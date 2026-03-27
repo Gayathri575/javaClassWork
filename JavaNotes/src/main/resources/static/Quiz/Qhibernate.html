@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Hibernate Quiz | JavaHub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        :root{
+          --bg:#0d0f14;--surface:#161921;--card:#1e2230;--border:#2a2f40;
+          --accent:#4f8ef7;--accent2:#7c5cfc;--green:#36d68a;--red:#f75c5c;
+          --warn:#f7b955;--text:#e8eaf0;--muted:#7a7f94;--radius:14px;
+          --mono:'Space Mono',monospace;--sans:'DM Sans',sans-serif;
+          --dark:#222831;--nav-accent:#00adb5;
+          --transition:0.3s cubic-bezier(0.25,0.8,0.25,1);
+        }
+        html{scroll-behavior:smooth}
+        body{
+          font-family:var(--sans);background:var(--bg);color:var(--text);
+          min-height:100vh;display:flex;flex-direction:column;
+          align-items:center;padding:0 0 60px;-webkit-font-smoothing:antialiased;
+        }
+
+        /* NAVBAR */
+        .navbar{
+          width:100%;display:flex;justify-content:space-between;align-items:center;
+          background:var(--dark);padding:1rem 10%;position:sticky;top:0;z-index:1000;
+          border-bottom:1px solid rgba(0,173,181,0.15);backdrop-filter:blur(10px);
+          margin-bottom:36px;
+        }
+        .logo{color:#fff;font-size:1.3rem;font-weight:700;font-family:'IBM Plex Mono',monospace}
+        .logo span{color:var(--nav-accent)}
+        .nav-links{list-style:none;display:flex;gap:30px;align-items:center}
+        .nav-links a{
+          text-decoration:none;color:#ccc;font-weight:500;font-size:0.9rem;
+          position:relative;padding-bottom:3px;transition:color var(--transition);
+        }
+        .nav-links a::after{
+          content:'';position:absolute;bottom:0;left:0;width:0;height:2px;
+          background:var(--nav-accent);transition:width var(--transition);
+        }
+        .nav-links a:hover{color:#fff}
+        .nav-links a:hover::after{width:100%}
+        .menu-toggle{
+          display:none;background:transparent;border:1.5px solid rgba(255,255,255,0.2);
+          color:#fff;font-size:1.3rem;cursor:pointer;padding:6px 12px;border-radius:6px;
+          transition:border-color var(--transition),background var(--transition);
+        }
+        .menu-toggle:hover{border-color:var(--nav-accent);background:rgba(0,173,181,0.1)}
+
+        /* QUIZ */
+        .quiz-wrapper{width:100%;padding:0 16px;display:flex;justify-content:center}
+        .quiz-shell{
+          width:100%;max-width:720px;background:var(--card);
+          border:1px solid var(--border);border-radius:var(--radius);
+          overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45);
+        }
+        .top-bar{
+          display:flex;align-items:center;justify-content:space-between;
+          padding:16px 24px;background:var(--surface);border-bottom:1px solid var(--border);
+        }
+        .q-counter{font-family:var(--mono);font-size:.85rem;color:var(--muted)}
+        .q-counter span{color:var(--text);font-weight:700}
+        .timer{
+          display:flex;align-items:center;gap:8px;
+          font-family:var(--mono);font-size:1rem;font-weight:700;color:var(--green);transition:color .4s;
+        }
+        .timer svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2}
+        .timer.warn{color:var(--warn)}
+        .timer.urgent{color:var(--red);animation:pulse 1s infinite}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+        .progress-track{height:4px;background:var(--border)}
+        .progress-fill{
+          height:4px;background:linear-gradient(90deg,var(--accent),var(--accent2));
+          transition:width .4s ease;
+        }
+        .q-body{padding:28px 28px 20px}
+        .q-label{
+          font-family:var(--mono);font-size:.72rem;color:var(--accent2);
+          letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;
+        }
+        .q-text{font-size:1.1rem;font-weight:600;line-height:1.6;color:var(--text);margin-bottom:24px}
+        .options{display:flex;flex-direction:column;gap:12px}
+        .opt{
+          display:flex;align-items:center;gap:14px;padding:14px 18px;
+          background:var(--surface);border:1.5px solid var(--border);border-radius:10px;
+          cursor:pointer;transition:border-color .2s,background .2s,transform .1s;font-size:.95rem;
+        }
+        .opt:hover:not(.locked){border-color:var(--accent);background:rgba(79,142,247,.07)}
+        .opt:active:not(.locked){transform:scale(.99)}
+        .opt-key{
+          font-family:var(--mono);font-size:.78rem;font-weight:700;
+          min-width:26px;height:26px;display:flex;align-items:center;justify-content:center;
+          background:var(--border);border-radius:6px;color:var(--muted);transition:.2s;
+        }
+        .opt.correct{border-color:var(--green)!important;background:rgba(54,214,138,.1)!important}
+        .opt.correct .opt-key{background:var(--green);color:#fff}
+        .opt.wrong{border-color:var(--red)!important;background:rgba(247,92,92,.1)!important}
+        .opt.wrong .opt-key{background:var(--red);color:#fff}
+        .opt.locked{cursor:default}
+        .explanation{
+          margin-top:16px;padding:14px 16px;background:rgba(79,142,247,.07);
+          border-left:3px solid var(--accent);border-radius:0 8px 8px 0;
+          font-size:.88rem;color:var(--muted);display:none;line-height:1.6;
+        }
+        .explanation.show{display:block}
+        .q-footer{
+          display:flex;align-items:center;justify-content:space-between;
+          padding:16px 28px;border-top:1px solid var(--border);
+        }
+        .score-pill{
+          font-family:var(--mono);font-size:.85rem;padding:6px 14px;
+          background:var(--surface);border:1px solid var(--border);border-radius:20px;color:var(--muted);
+        }
+        .score-pill span{color:var(--green);font-weight:700}
+        .next-btn{
+          padding:10px 26px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+          color:#fff;border:none;border-radius:8px;font-family:var(--sans);
+          font-size:.95rem;font-weight:600;cursor:pointer;transition:.2s;
+        }
+        .next-btn:hover{opacity:.88;transform:translateY(-1px)}
+        .next-btn:disabled{background:var(--border);color:var(--muted);cursor:not-allowed;transform:none;opacity:1}
+
+        /* START */
+        .start-screen{padding:48px 32px;text-align:center}
+        .start-screen .icon{font-size:3.5rem;margin-bottom:16px}
+        .start-screen h1{font-size:1.8rem;font-weight:700;margin-bottom:10px}
+        .start-screen p{color:var(--muted);font-size:.95rem;line-height:1.7;max-width:420px;margin:0 auto 30px}
+        .meta-chips{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+        .chip{
+          padding:7px 16px;border-radius:20px;font-family:var(--mono);font-size:.78rem;
+          border:1px solid var(--border);color:var(--muted);background:var(--surface);
+        }
+        .chip span{color:var(--accent)}
+
+        /* STATS BANNER on start screen */
+        .stats-banner{
+          display:flex;justify-content:center;gap:20px;flex-wrap:wrap;
+          margin:16px auto 28px;max-width:420px;
+          padding:14px 18px;border-radius:10px;
+          background:var(--surface);border:1px solid var(--border);
+        }
+        .stat-item{text-align:center}
+        .stat-val{font-family:var(--mono);font-size:1.2rem;font-weight:700;color:var(--accent)}
+        .stat-lbl{font-size:.72rem;color:var(--muted);margin-top:2px}
+
+        .start-btn{
+          padding:14px 40px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+          color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;
+          font-family:var(--sans);cursor:pointer;transition:.2s;letter-spacing:.03em;
+        }
+        .start-btn:hover{opacity:.88;transform:translateY(-2px)}
+
+        /* RESULT */
+        .result-screen{padding:40px 32px;text-align:center}
+        .result-ring{
+          width:120px;height:120px;margin:0 auto 24px;
+          position:relative;display:flex;align-items:center;justify-content:center;
+        }
+        .result-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
+        .ring-bg{fill:none;stroke:var(--border);stroke-width:8}
+        .ring-fill{fill:none;stroke-width:8;stroke-linecap:round;stroke-dasharray:314;stroke-dashoffset:314;transition:stroke-dashoffset 1.2s ease}
+        .result-pct{font-family:var(--mono);font-size:1.6rem;font-weight:700;color:var(--text)}
+        .result-label{font-size:1.5rem;font-weight:700;margin-bottom:8px}
+        .result-score{color:var(--muted);margin-bottom:16px;font-size:.95rem}
+        .smart-msg{
+          margin:0 auto 16px;max-width:480px;padding:18px 20px;border-radius:10px;
+          border:1px solid var(--border);background:var(--surface);text-align:left;
+        }
+        .smart-msg .msg-head{
+          font-size:.72rem;font-family:var(--mono);letter-spacing:.1em;
+          text-transform:uppercase;color:var(--accent2);margin-bottom:8px;
+        }
+        .smart-msg .msg-body{font-size:.95rem;line-height:1.6;color:var(--text)}
+        .subtopic-list{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
+        .subtopic-tag{
+          padding:5px 12px;border-radius:20px;font-size:.8rem;font-family:var(--mono);
+          background:rgba(247,92,92,.12);border:1px solid rgba(247,92,92,.3);color:var(--red);
+        }
+        .subtopic-tag.ok{background:rgba(54,214,138,.1);border-color:rgba(54,214,138,.3);color:var(--green)}
+        .retry-btn{
+          padding:12px 34px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+          color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer;transition:.2s;
+        }
+        .retry-btn:hover{opacity:.88}
+
+        /* LOADING */
+        .loading{padding:60px 20px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:.9rem}
+        .spinner{
+          width:36px;height:36px;margin:0 auto 16px;
+          border:3px solid var(--border);border-top-color:var(--accent);
+          border-radius:50%;animation:spin .8s linear infinite;
+        }
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        /* RESPONSIVE */
+        @media(max-width:768px){
+          .navbar{padding:1rem 5%}
+          .nav-links{
+            display:none;flex-direction:column;gap:6px;background:#1b2028;padding:16px;
+            position:absolute;top:62px;right:5%;left:5%;border-radius:var(--radius);
+            border:1px solid rgba(0,173,181,0.15);box-shadow:0 8px 24px rgba(0,0,0,0.3);
+          }
+          .nav-links.active{display:flex}
+          .nav-links a{padding:10px 12px;border-radius:6px;font-size:0.95rem}
+          .nav-links a:hover{background:rgba(0,173,181,0.1)}
+          .nav-links a::after{display:none}
+          .menu-toggle{display:block}
+          .q-body{padding:20px 18px 16px}
+          .q-footer{padding:14px 18px}
+          .top-bar{padding:12px 18px}
+          .start-screen{padding:32px 20px}
+          .result-screen{padding:32px 20px}
+        }
+        @media(max-width:480px){
+          .start-screen h1{font-size:1.4rem}
+          .q-text{font-size:1rem}
+          .stats-banner{gap:14px}
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="logo">Java<span>Hub</span></div>
+    <button class="menu-toggle" id="menu-toggle">☰</button>
+    <ul class="nav-links" id="nav-links">
+        <li><a href="/index.html">Home</a></li>
+        <li><a href="/articles.html">Articles</a></li>
+        <li><a href="/project.html">Projects</a></li>
+        <li><a href="/Quiz.html">Quiz</a></li>
+    </ul>
+</nav>
+
+<div class="quiz-wrapper">
+    <div class="quiz-shell" id="quiz-shell">
+        <div class="loading">
+            <div class="spinner"></div>
+            Fetching questions…
+        </div>
+    </div>
+</div>
+
+<script>
+    // ── Hamburger ──────────────────────────────────────────────
+    document.getElementById('menu-toggle').addEventListener('click', () => {
+        document.getElementById('nav-links').classList.toggle('active');
+    });
+
+    // ── CONFIG ─────────────────────────────────────────────────
+    const TOPIC      = 'hibernate';
+    const TOTAL_Q    = 15;
+    const TIMER_SECS = 8 * 60;
+    const KEYS       = ['A','B','C','D'];
+    const LS_KEY     = 'quiz_' + TOPIC;
+
+    // ── STATE ──────────────────────────────────────────────────
+    let questions     = [];
+    let current       = 0;
+    let score         = 0;
+    let timerInterval = null;
+    let remaining     = TIMER_SECS;
+    let answered      = false;
+    let subTopicStats = {};
+    let wrongQs       = [];
+
+    // ── LOCALSTORAGE HELPERS ───────────────────────────────────
+    function loadStats(){
+        return JSON.parse(localStorage.getItem(LS_KEY)) || {
+            bestScore: 0, totalAttempts: 0, lastScore: null, wrongQuestions: []
+        };
+    }
+
+    function saveStats(){
+        const existing = loadStats();
+        const updated = {
+            lastScore:      score,
+            bestScore:      Math.max(existing.bestScore, score),
+            totalAttempts:  existing.totalAttempts + 1,
+            wrongQuestions: wrongQs
+        };
+        localStorage.setItem(LS_KEY, JSON.stringify(updated));
+    }
+
+    // ── HELPERS ────────────────────────────────────────────────
+    const shell = () => document.getElementById('quiz-shell');
+    function pad(n){ return String(n).padStart(2,'0'); }
+    function fmt(s){ return `${pad(Math.floor(s/60))}:${pad(s%60)}`; }
+    function trackSubTopic(sub, correct){
+        if(!subTopicStats[sub]) subTopicStats[sub]={correct:0,total:0};
+        subTopicStats[sub].total++;
+        if(correct) subTopicStats[sub].correct++;
+    }
+    function escQ(s){ return (s||'').replace(/'/g,"&#39;").replace(/"/g,'&quot;'); }
+
+    // ── LOAD ───────────────────────────────────────────────────
+    async function loadQuiz(){
+        try{
+            const res = await fetch('/api/quiz/hibernate');
+            if(!res.ok) throw new Error(res.statusText);
+            questions = await res.json();
+            renderStart();
+        } catch(e){
+            shell().innerHTML = `<div class="loading" style="color:var(--red)">
+                Failed to load questions.<br><small>${e.message}</small></div>`;
+        }
+    }
+
+    // ── START SCREEN ───────────────────────────────────────────
+    function renderStart(){
+        const st = loadStats();
+        const hasPrev = st.totalAttempts > 0;
+
+        const statsBanner = hasPrev ? `
+            <div class="stats-banner">
+                <div class="stat-item">
+                    <div class="stat-val">${st.bestScore}/${TOTAL_Q}</div>
+                    <div class="stat-lbl">🏆 Best</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-val">${st.lastScore}/${TOTAL_Q}</div>
+                    <div class="stat-lbl">📝 Last</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-val">${st.totalAttempts}</div>
+                    <div class="stat-lbl">🔁 Attempts</div>
+                </div>
+            </div>` : '';
+
+        shell().innerHTML = `
+            <div class="start-screen">
+                <div class="icon"></div>
+                <h1>${TOPIC} Quiz</h1>
+<p>Test your ${TOPIC} knowledge with real interview questions.</p>
+                <div class="meta-chips">
+                    <div class="chip">Questions <span>${TOTAL_Q}</span></div>
+                    <div class="chip">Time <span>8 min</span></div>
+                    <div class="chip">Topic <span>hibernate</span></div>
+                </div>
+                ${statsBanner}
+                <button class="start-btn" onclick="startQuiz()">
+                    ${hasPrev ? 'Retry Quiz →' : 'Start Quiz →'}
+                </button>
+            </div>`;
+    }
+
+    // ── START ──────────────────────────────────────────────────
+    function startQuiz(){
+        current=0; score=0; remaining=TIMER_SECS;
+        subTopicStats={}; wrongQs=[];
+        renderQuizFrame(); renderQuestion(); startTimer();
+    }
+
+    // ── QUIZ FRAME ─────────────────────────────────────────────
+    function renderQuizFrame(){
+        shell().innerHTML = `
+            <div class="top-bar">
+                <div class="q-counter">Question <span id="q-num">1</span> / ${TOTAL_Q}</div>
+                <div class="timer" id="timer">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                    <span id="timer-val">${fmt(remaining)}</span>
+                </div>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progress-fill" style="width:${(1/TOTAL_Q)*100}%"></div>
+            </div>
+            <div class="q-body" id="q-body"></div>
+            <div class="q-footer">
+                <div class="score-pill">Score <span id="score-val">0</span></div>
+                <button class="next-btn" id="next-btn" disabled onclick="nextQuestion()">Next →</button>
+            </div>`;
+    }
+
+    // ── RENDER QUESTION ────────────────────────────────────────
+    function renderQuestion(){
+    const q = questions[current];
+    answered = false;
+    document.getElementById('q-num').textContent = current+1;
+    document.getElementById('progress-fill').style.width = `${((current+1)/TOTAL_Q)*100}%`;
+    const nextBtn = document.getElementById('next-btn');
+    nextBtn.disabled = true;
+    nextBtn.textContent = current === TOTAL_Q-1 ? 'Finish' : 'Next →';
+
+    // ✅ Shuffle options but keep track of correct answer
+    const shuffled = [...q.options]
+        .map((opt, i) => ({ opt, i }))
+        .sort(() => Math.random() - 0.5);
+
+    document.getElementById('q-body').innerHTML = `
+        <div class="q-label">${q.sub_topic || 'Core Java'}</div>
+        <div class="q-text">${q.question}</div>
+        <div class="options">
+            ${shuffled.map((item, i) => `
+                <div class="opt" data-index="${i}"
+                     onclick="selectOpt(this,'${escQ(q.answer)}','${escQ(q.explanation)}','${escQ(q.question)}')">
+                    <div class="opt-key">${KEYS[i]}</div>
+                    <div class="opt-text">${item.opt}</div>
+                </div>`).join('')}
+        </div>
+        <div class="explanation" id="explanation"></div>`;
+}
+
+    // ── SELECT OPTION ──────────────────────────────────────────
+    function selectOpt(el, correctAnswer, explanation, questionText){
+        if(answered) return;
+        answered = true;
+        const opts = document.querySelectorAll('.opt');
+        const q = questions[current];
+        const chosen = el.querySelector('.opt-text').textContent;
+        const isCorrect = chosen === correctAnswer;
+
+        opts.forEach(o => {
+            o.classList.add('locked');
+            if(o.querySelector('.opt-text').textContent === correctAnswer) o.classList.add('correct');
+        });
+        if(!isCorrect){
+            el.classList.add('wrong');
+            wrongQs.push(questionText);
+        }
+
+        trackSubTopic(q.sub_topic, isCorrect);
+        if(isCorrect) score++;
+        document.getElementById('score-val').textContent = score;
+
+        const expEl = document.getElementById('explanation');
+        expEl.textContent = explanation || 'See documentation for details.';
+        expEl.classList.add('show');
+        document.getElementById('next-btn').disabled = false;
+    }
+
+    // ── NEXT ───────────────────────────────────────────────────
+    function nextQuestion(){
+        if(!answered) trackSubTopic(questions[current].sub_topic, false);
+        current++;
+        if(current < TOTAL_Q) renderQuestion();
+        else endQuiz();
+    }
+
+    // ── TIMER ──────────────────────────────────────────────────
+    function startTimer(){
+        timerInterval = setInterval(() => {
+            remaining--;
+            const tv = document.getElementById('timer-val');
+            const tw = document.getElementById('timer');
+            if(tv) tv.textContent = fmt(remaining);
+            if(tw){
+                tw.classList.toggle('warn',   remaining<=120 && remaining>60);
+                tw.classList.toggle('urgent', remaining<=60);
+            }
+            if(remaining<=0){ clearInterval(timerInterval); endQuiz(true); }
+        }, 1000);
+    }
+    function stopTimer(){ clearInterval(timerInterval); }
+
+    // ── END QUIZ ───────────────────────────────────────────────
+    function endQuiz(timeout=false){
+        stopTimer();
+        saveStats();  // ← save to localStorage
+
+        const st      = loadStats();
+        const pct     = Math.round((score/TOTAL_Q)*100);
+        const circumf = 314;
+        const offset  = circumf - (pct/100)*circumf;
+        const ringColor = pct>=70?'var(--green)':pct>=40?'var(--warn)':'var(--red)';
+
+        // Sub-topic analysis
+        const weak=[], strong=[];
+        Object.entries(subTopicStats).forEach(([sub,s]) => {
+            (s.total>0 && s.correct/s.total>=0.5 ? strong : weak).push(sub);
+        });
+
+        // Smart message
+        let msgHead, msgBody;
+        if(timeout)      { msgHead="⏰ Time's Up!";             msgBody=`You ran out of time with ${score}/${TOTAL_Q} correct.`; }
+        else if(pct===100){ msgHead='🏆 Perfect Score!';        msgBody='Flawless! Strong mastery of Core Java.'; }
+        else if(pct>=70)  { msgHead='🎉 Great Job!';            msgBody='Solid grasp of Core Java. '+(weak.length?'Focus on weak areas below!':'Keep pushing to 100%!'); }
+        else if(pct>=40)  { msgHead='📚 Keep Practising';       msgBody="You're on the right track. Revisit the topics below."; }
+        else              { msgHead='💡 Build a Strong Foundation'; msgBody="Don't be discouraged. Targeted revision will help a lot!"; }
+
+        let tagHTML='';
+        if(weak.length)   tagHTML += `<div style="margin-top:12px;font-size:.8rem;color:var(--muted);margin-bottom:6px">Concentrate on:</div>
+            <div class="subtopic-list">${weak.map(s=>`<div class="subtopic-tag">${s}</div>`).join('')}</div>`;
+        if(strong.length) tagHTML += `<div class="subtopic-list" style="margin-top:10px">
+            ${strong.map(s=>`<div class="subtopic-tag ok">✓ ${s}</div>`).join('')}</div>`;
+
+        // Stats box
+        const statsHTML = `
+            <div class="smart-msg">
+                <div class="msg-head">📊 Your Stats</div>
+                <div class="msg-body">
+                    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:12px">
+                        <div>🏆 Best &nbsp;<strong>${st.bestScore} / ${TOTAL_Q}</strong></div>
+                        <div>🔁 Attempts &nbsp;<strong>${st.totalAttempts}</strong></div>
+                        <div>📝 This round &nbsp;<strong>${score} / ${TOTAL_Q}</strong></div>
+                    </div>
+                    ${wrongQs.length
+                        ? `<div style="font-size:.8rem;color:var(--muted);margin-bottom:6px">❌ Wrong this round:</div>
+                           <ul style="padding-left:16px;font-size:.82rem;color:var(--red);line-height:2">
+                               ${wrongQs.map(q=>`<li>${q}</li>`).join('')}
+                           </ul>`
+                        : `<div style="color:var(--green);font-size:.88rem">✅ No wrong answers this round!</div>`
+                    }
+                </div>
+            </div>`;
+
+        shell().innerHTML = `
+            <div class="result-screen">
+                <div class="result-ring">
+                    <svg viewBox="0 0 110 110" width="120" height="120">
+                        <circle class="ring-bg" cx="55" cy="55" r="50"/>
+                        <circle class="ring-fill" cx="55" cy="55" r="50"
+                            style="stroke:${ringColor};stroke-dashoffset:${circumf}" id="ring-fill"/>
+                    </svg>
+                    <div class="result-pct" id="ring-pct">0%</div>
+                </div>
+                <div class="result-label">${msgHead}</div>
+                <div class="result-score">${score} / ${TOTAL_Q} correct${timeout?' (time expired)':''}</div>
+                ${statsHTML}
+                <div class="smart-msg">
+                    <div class="msg-head">📋 Personalised Feedback</div>
+                    <div class="msg-body">${msgBody}${tagHTML}</div>
+                </div>
+                <button class="retry-btn" onclick="startQuiz()">Retry Quiz ↺</button>
+            </div>`;
+
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                const ring = document.getElementById('ring-fill');
+                if(ring) ring.style.strokeDashoffset = offset;
+                animateCounter(pct);
+            }, 150);
+        });
+    }
+
+    function animateCounter(target){
+        let n=0;
+        const el = document.getElementById('ring-pct');
+        if(!el) return;
+        const step = Math.ceil(target/50);
+        const iv = setInterval(() => {
+            n = Math.min(n+step, target);
+            el.textContent = n+'%';
+            if(n>=target) clearInterval(iv);
+        },25);
+    }
+
+    loadQuiz();
+</script>
+</body>
+</html>

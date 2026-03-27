@@ -1,0 +1,204 @@
+/* ===========================
+   IMPORTS & VARIABLES
+=========================== */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+    --dark:       #222831;
+    --dark-alt:   #393e46;
+    --accent:     #00adb5;
+    --accent-dim: #007f87;
+    --light:      #eeeeee;
+    --white:      #ffffff;
+    --footer-bg:  #161b22;
+    --muted:      #8b949e;
+    --radius:     10px;
+    --transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* ===========================
+   RESET & BASE
+=========================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--light);
+    color: var(--dark);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ===========================
+   NAVBAR  (style.css உடன் identical)
+=========================== */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--dark);
+    padding: 1rem 10%;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(0, 173, 181, 0.15);
+    backdrop-filter: blur(10px);
+}
+
+.logo {
+    color: var(--white);
+    font-size: 1.3rem;
+    font-weight: 700;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: -0.3px;
+}
+.logo span { color: var(--accent); }
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 30px;
+    align-items: center;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #ccc;
+    font-weight: 500;
+    font-size: 0.9rem;
+    letter-spacing: 0.3px;
+    position: relative;
+    padding-bottom: 3px;
+    transition: color var(--transition);
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--accent);
+    transition: width var(--transition);
+}
+
+.nav-links a:hover { color: var(--white); }
+.nav-links a:hover::after { width: 100%; }
+
+.menu-toggle {
+    display: none;
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    color: var(--white);
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: border-color var(--transition), background var(--transition);
+}
+
+.menu-toggle:hover {
+    border-color: var(--accent);
+    background: rgba(0,173,181,0.1);
+}
+
+/* ===========================
+   ARTICLES GRID
+=========================== */
+.articles-grid {
+    padding: 50px 10%;
+    text-align: center;
+}
+
+.articles-grid h2 {
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-weight: 700;
+    margin-bottom: 40px;
+    color: var(--dark);
+    letter-spacing: -0.3px;
+}
+
+.articles-grid h2 span { color: var(--accent); }
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 30px;
+}
+
+.grid-item {
+    background: var(--accent);
+    color: var(--white);
+    padding: 40px 20px;
+    border-radius: var(--radius);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform var(--transition), background var(--transition), box-shadow var(--transition);
+    box-shadow: 0 4px 16px rgba(0,173,181,0.2);
+}
+
+.grid-item:hover {
+    transform: scale(1.05);
+    background: var(--dark);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+}
+
+.grid-item a {
+    color: var(--white);
+    text-decoration: none;
+    display: block;
+    height: 100%;
+    width: 100%;
+}
+
+.grid-item a:hover { color: var(--white); }
+
+/* ===========================
+   MOBILE — max-width: 768px
+=========================== */
+@media (max-width: 768px) {
+    .navbar { padding: 1rem 5%; }
+
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        gap: 6px;
+        background: #1b2028;
+        padding: 16px;
+        position: absolute;
+        top: 62px;
+        right: 5%;
+        left: 5%;
+        border-radius: var(--radius);
+        border: 1px solid rgba(0, 173, 181, 0.15);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .nav-links.active { display: flex; }
+
+    .nav-links a {
+        padding: 10px 12px;
+        border-radius: 6px;
+        font-size: 0.95rem;
+    }
+
+    .nav-links a:hover { background: rgba(0,173,181,0.1); }
+    .nav-links a::after { display: none; }
+
+    .menu-toggle { display: block; }
+
+    .articles-grid { padding: 40px 6%; }
+
+    .grid-container { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; }
+
+    .grid-item { padding: 30px 16px; font-size: 1rem; }
+}
+
+@media (max-width: 480px) {
+    .grid-container { grid-template-columns: 1fr 1fr; }
+    .articles-grid h2 { font-size: 1.4rem; }
+}
