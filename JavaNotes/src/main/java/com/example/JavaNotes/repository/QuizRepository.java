@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface QuizRepository extends JpaRepository<Quiz, Long> {
 
-    @Query(value = "SELECT * FROM quiz_questions WHERE LOWER(REPLACE(topic, ' ', '')) = LOWER(REPLACE(:topic, ' ', '')) ORDER BY RAND() LIMIT 15", nativeQuery = true)
+    @Query(value = "SELECT * FROM quiz_questions WHERE LOWER(topic) = LOWER(:topic) ORDER BY RAND() LIMIT 15", nativeQuery = true)
     List<Quiz> findRandomByTopic(@Param("topic") String topic);
 }

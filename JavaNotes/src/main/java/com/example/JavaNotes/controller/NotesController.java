@@ -7,13 +7,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "*")
     @RestController
     @RequestMapping("/api/notes")
     public class NotesController {
 
         private final NotesService notesService;
-
         public NotesController(NotesService notesService) {
             this.notesService = notesService;
         }
@@ -59,7 +57,6 @@ import java.util.List;
             List<Notes> notes = notesService.searchNotesByTitle(keyword);
             return ResponseEntity.ok(notes);
         }
-
 
         // Get notes by category
         @GetMapping("/category")

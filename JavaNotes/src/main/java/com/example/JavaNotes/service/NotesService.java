@@ -2,8 +2,9 @@ package com.example.JavaNotes.service;
 
 import com.example.JavaNotes.model.Notes;
 
-import java.util.List;
 
+
+import java.util.List;
 
     public interface NotesService {
 

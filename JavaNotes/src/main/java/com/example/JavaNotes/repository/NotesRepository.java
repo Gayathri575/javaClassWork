@@ -9,7 +9,7 @@ import java.util.List;
 @Repository
 public interface NotesRepository extends JpaRepository<Notes, Long> {
 
-    List<Notes> findByCategoryIgnoreCase(String category);
+    List<Notes> findByTitleContaining(String keyword);
 
-    List<Notes> findByTitleContainingIgnoreCase(String keyword);
+    List<Notes> findByCategory(String category);
 }
